@@ -1,118 +1,112 @@
 import java.util.*;
-import java.time.LocalTime;
 
-class Transaction {
-    String id;
-    double fee;
-    LocalTime timestamp;
+class Client {
+    String name;
+    int riskScore;
+    double accountBalance;
 
-    public Transaction(String id, double fee, String ts) {
-        this.id = id;
-        this.fee = fee;
-        this.timestamp = LocalTime.parse(ts);
+    public Client(String name, int riskScore, double accountBalance) {
+        this.name = name;
+        this.riskScore = riskScore;
+        this.accountBalance = accountBalance;
     }
 
     @Override
     public String toString() {
-        return id + ":" + fee + "@" + timestamp;
+        return name + ":" + riskScore + " (Bal:" + accountBalance + ")";
     }
 }
 
-public class ASSIGNMENT4AND3 {
+public class ASSIGNMENT4AND3{
 
-    // 🔵 Bubble Sort (by fee)
-    public static void bubbleSortByFee(List<Transaction> list) {
-        int n = list.size();
-        int passes = 0, swaps = 0;
+    // 🔵 Bubble Sort (Ascending by riskScore)
+    public static void bubbleSortAsc(Client[] arr) {
+        int n = arr.length;
+        int swaps = 0;
 
         for (int i = 0; i < n - 1; i++) {
             boolean swapped = false;
-            passes++;
 
             for (int j = 0; j < n - i - 1; j++) {
-                if (list.get(j).fee > list.get(j + 1).fee) {
-                    Transaction temp = list.get(j);
-                    list.set(j, list.get(j + 1));
-                    list.set(j + 1, temp);
+                if (arr[j].riskScore > arr[j + 1].riskScore) {
+                    // swap
+                    Client temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+
                     swaps++;
                     swapped = true;
+
+                    // visualize swap
+                    System.out.println("Swapped: " + arr[j].name + " <-> " + arr[j + 1].name);
                 }
             }
 
-            if (!swapped) break; // early termination
+            if (!swapped) break; // optimization
         }
 
-        System.out.println("Bubble Sort → Passes: " + passes + ", Swaps: " + swaps);
+        System.out.println("Total Swaps: " + swaps);
     }
 
-    // 🟢 Insertion Sort (by fee + timestamp)
-    public static void insertionSort(List<Transaction> list) {
-        int n = list.size();
+    // 🟢 Insertion Sort (Descending riskScore + accountBalance)
+    public static void insertionSortDesc(Client[] arr) {
+        int n = arr.length;
 
         for (int i = 1; i < n; i++) {
-            Transaction key = list.get(i);
+            Client key = arr[i];
             int j = i - 1;
 
-            while (j >= 0 && compare(list.get(j), key) > 0) {
-                list.set(j + 1, list.get(j)); // shift
+            while (j >= 0 && compare(arr[j], key) < 0) {
+                arr[j + 1] = arr[j]; // shift right
                 j--;
             }
 
-            list.set(j + 1, key);
+            arr[j + 1] = key;
         }
     }
 
-    // Comparison: fee first, then timestamp
-    private static int compare(Transaction a, Transaction b) {
-        if (a.fee != b.fee) {
-            return Double.compare(a.fee, b.fee);
+    // Comparison: DESC riskScore, then DESC accountBalance
+    private static int compare(Client a, Client b) {
+        if (a.riskScore != b.riskScore) {
+            return Integer.compare(a.riskScore, b.riskScore);
         }
-        return a.timestamp.compareTo(b.timestamp);
+        return Double.compare(a.accountBalance, b.accountBalance);
     }
 
-    // 🚨 High-fee outliers (> 50)
-    public static List<Transaction> findHighFee(List<Transaction> list) {
-        List<Transaction> outliers = new ArrayList<>();
-
-        for (Transaction t : list) {
-            if (t.fee > 50.0) {
-                outliers.add(t);
-            }
+    // 🔝 Top N highest risk clients
+    public static void printTopClients(Client[] arr, int topN) {
+        System.out.println("Top " + topN + " Highest Risk Clients:");
+        for (int i = 0; i < Math.min(topN, arr.length); i++) {
+            System.out.println(arr[i].name + "(" + arr[i].riskScore + ")");
         }
-        return outliers;
     }
 
     public static void main(String[] args) {
-        List<Transaction> transactions = new ArrayList<>();
 
-        // Sample Input
-        transactions.add(new Transaction("id1", 10.5, "10:00"));
-        transactions.add(new Transaction("id2", 25.0, "09:30"));
-        transactions.add(new Transaction("id3", 5.0, "10:15"));
+        Client[] clients = {
+                new Client("clientC", 80, 5000),
+                new Client("clientA", 20, 2000),
+                new Client("clientB", 50, 3000)
+        };
 
-        // Choose sorting based on size
-        if (transactions.size() <= 100) {
-            bubbleSortByFee(transactions);
-        } else {
-            insertionSort(transactions);
+        // 🔵 Bubble Sort (Ascending)
+        System.out.println("Bubble Sort (Ascending by Risk):");
+        bubbleSortAsc(clients);
+
+        System.out.println("After Bubble Sort:");
+        for (Client c : clients) {
+            System.out.println(c);
         }
 
-        // Output sorted transactions
-        System.out.println("Sorted Transactions:");
-        for (Transaction t : transactions) {
-            System.out.println(t);
+        // 🟢 Insertion Sort (Descending)
+        insertionSortDesc(clients);
+
+        System.out.println("\nInsertion Sort (Descending by Risk + Balance):");
+        for (Client c : clients) {
+            System.out.println(c);
         }
 
-        // Detect outliers
-        List<Transaction> outliers = findHighFee(transactions);
-
-        System.out.println("High-Fee Outliers:");
-        if (outliers.isEmpty()) {
-            System.out.println("None");
-        } else {
-            for (Transaction t : outliers) {
-                System.out.println(t);
-            }
-        }
+        // 🔝 Top clients
+        printTopClients(clients, 10);
     }
 }
